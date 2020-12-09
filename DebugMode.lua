@@ -13,6 +13,9 @@ white = 0xFFFFFFFF
 client.SetGameExtraPadding(0,0,144,56)
 switch = false
 
+wrap = 143
+wrap2 = 0
+
 function toggleFlag(addr, val) memory.writebyte(addr, bit.bxor(memory.readbyte(addr), val)) end
 
 rightside = 40
@@ -28,16 +31,6 @@ warpmenuswitch = false
 aID = 0x00
 rID = 0x00
 
---[[ 
-    Do not forget:
-    Linking Discords per hyperlink
-    
-    Minish Maker
-    os.execute("start https://discord.gg/yFxmScJ3zf")
-
-    Golden Sun Hacking Community
-    os.execute("start https://discord.gg/2DFF4Dx5vC")
-]]--
 quote_timer = 0
 quote_string = quote_string_rando
 
@@ -54,20 +47,28 @@ while true do
     mouse = input.getmouse()
     if not mouse["Left"] then switch = false end
 
-   --gui.pixelText(1,1,mouse.X)
-   --gui.pixelText(1,12,mouse.Y)
+  --gui.pixelText(1,1,mouse.X)
+  --gui.pixelText(1,12,mouse.Y)
 
     gui.drawImage("img//background.png",0,0)
+    wrap = wrap + 0.25
+    wrap2 = wrap + 0.35
+    if wrap > 287 then wrap = 143 end
+
+    gui.drawImageRegion("img//clouds.png", 144-wrap,0,144,160,240,0)
+    gui.drawImageRegion("img//clouds.png", (144*2)-wrap,0,144,160,240,0)
+
     gui.drawText(1,160, "Debug Mode", white,inv, 8, "MiniSet2")
 
     gui.drawText(60,160, quotes[quote_string], white,inv, 8, "MiniSet2")
 
-    if mouse.X >= 1 and mouse.X <= 382 then
+    --if mouse.X >= 1 and mouse.X <= 382 then
     for i=1,#item_list do
         local addr,val,png,xpos,ypos, m_xpos1, m_xpos2, m_ypos1, m_ypos2, bottle_val = unpack(item_list[i])
             if addr >= 0x02002B32 and addr <= 0x02002B38  then
                 if ((bit.band(memory.readbyte(addr), val) == val)) then 
-                    gui.drawBox(m_xpos1, m_ypos1, m_xpos2, m_ypos2, 0xFFFFFFFF, 0x5F34eb43)
+                    gui.drawImage("items//" .. png .. ".png", xpos, ypos)
+                    
                 end
             end
             if addr == 0x02002B39 then
@@ -75,7 +76,7 @@ while true do
                     if memory.readbyte(0x02002AF6+bottle_val) == 0x00 then
                         memory.writebyte(0x02002AF6+bottle_val, 32)
                     end
-                    gui.drawBox(m_xpos1, m_ypos1, m_xpos2, m_ypos2, 0xFFFFFFFF, 0x5F34eb43)
+                    gui.drawImage("items//" .. memory.readbyte(0x02002AF6+bottle_val) .. ".png", xpos, ypos)
                     gui.drawText(329,174+(11*bottle_val), "0", white, inv, 8, "Goodbye Despair")
                     gui.drawText(334,175+(11*bottle_val), "x", white, inv, 6, "Goodbye Despair")
                     gui.drawText(338,174+(11*bottle_val), string.upper(string.format("%02x", memory.readbyte(0x02002AF6+bottle_val))), white, inv, 8, "Goodbye Despair")
@@ -84,7 +85,7 @@ while true do
             end
             if addr >= 0x02002B42 then
                 if ((bit.band(memory.readbyte(addr), val) == val)) then 
-                    gui.drawBox(m_xpos1, m_ypos1, m_xpos2, m_ypos2, 0xFFFFFFFF, 0x5F34eb43)
+                    gui.drawImage("items//" .. png .. ".png", xpos, ypos)
                 end
             end
             if mouse.X >= m_xpos1 and mouse.X <= m_xpos2 and mouse.Y >= m_ypos1 and mouse.Y <= m_ypos2 then
@@ -95,7 +96,7 @@ while true do
                     end
                 end
             end
-            if mouse.X >= 240 and mouse.X <= 356 and mouse.Y >= 23 and mouse.Y <= 29 then
+            if mouse.X >= 240 and mouse.X <= 356 and mouse.Y >= 14 and mouse.Y <= 20 then
                 if switch == false then
                     if mouse["Left"] then
                         os.execute("start https://discord.gg/yFxmScJ3zf")
@@ -137,7 +138,7 @@ while true do
             gui.drawImage("items//bags//" .. bag_string .. memory.readbyte(bag_addr) .. ".png", x,y)
         end
     end
-end
+--end
 
 -- Warp Menu
 warpmenufunction()
@@ -148,7 +149,16 @@ warptext()
     gui.pixelText(307, 112, "RNG", white, inv)
     gui.pixelText(307, 119, string.upper(string.format("%08x", memory.read_u32_le(0x03001150))), white, inv)
 
+    if emu.getluacore() ~= "LuaInterface" then
+        gui.pixelText(2,40, " You are currently using the " .. emu.getluacore() .. " core. \n Please use LuaInterface to optimize the functionality \n of this script. \n\n Change your LuaCore at \n Config > Customize > Advance > Check 'LuaInterface'\n And restart your emulator\n\n\n This script is optimized for BizHawk 2.5.2")
+    end
+
     gui.drawImage("img//foreground.png",0,0)
+    
+
+
+
     credits()
-    emu.yield()
+    emu.frameadvance()
+    
 end
